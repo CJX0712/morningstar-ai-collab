@@ -1,0 +1,17 @@
+{
+  "name": "@morningstar/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "description": "跨服务契约（唯一契约源）. 作者：晨星",
+  "author": "晨星",
+  "license": "MIT",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}

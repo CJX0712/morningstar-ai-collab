@@ -1,0 +1,152 @@
+{
+  "meta": {
+    "product": "晨星 Morning Star — AI 原生团队协作平台 MVP",
+    "register": "product",
+    "defaultTheme": "dark",
+    "accentHueOKLCH": 175,
+    "designVariance": 5,
+    "motionIntensity": 5,
+    "visualDensity": 6,
+    "iconSource": "lucide-react@1.46.0",
+    "sourceOfTruth": "docs/design/DESIGN.md",
+    "note": "纯设计语义令牌；与 packages/contracts (API/TS 类型) 职责分离，不重叠"
+  },
+  "color": {
+    "dark": {
+      "bg": {"value": "#0A0B0D", "type": "color", "role": "A1-identity"},
+      "surface": {"value": "#121417", "type": "color", "role": "A1-identity"},
+      "surface-raised": {"value": "#1A1D21", "type": "color", "role": "B-slot"},
+      "surface-overlay": {"value": "#22262B", "type": "color", "role": "C-extension"},
+      "fg": {"value": "#EAECF0", "type": "color", "role": "A1-identity"},
+      "fg-2": {"value": "#B4B9C2", "type": "color", "role": "B-slot"},
+      "muted": {"value": "#8A909B", "type": "color", "role": "A1-identity"},
+      "meta": {"value": "#5C626D", "type": "color", "role": "B-slot"},
+      "border": {"value": "rgba(255,255,255,0.08)", "type": "color", "role": "A1-identity"},
+      "border-soft": {"value": "rgba(255,255,255,0.05)", "type": "color", "role": "B-slot"},
+      "accent": {"value": "#14B8A6", "type": "color", "role": "A1-identity", "note": "品牌强调 Teal，非紫非默认靛蓝 #6366F1"},
+      "accent-hover": {"value": "#2DD4BF", "type": "color", "role": "A2"},
+      "accent-active": {"value": "#0D9488", "type": "color", "role": "A2"},
+      "accent-on": {"value": "#04110F", "type": "color", "role": "A2", "note": "accent 背景上的深字，保对比"},
+      "accent-soft": {"value": "rgba(20,184,166,0.12)", "type": "color", "role": "C-extension", "note": "AI 思考脉冲/选中底色"},
+      "success": {"value": "#22C55E", "type": "color", "role": "A2"},
+      "warn": {"value": "#F59E0B", "type": "color", "role": "A2"},
+      "danger": {"value": "#EF4444", "type": "color", "role": "A2"},
+      "info": {"value": "#38BDF8", "type": "color", "role": "A2"},
+      "focus-ring": {"value": "0 0 0 2px rgba(20,184,166,0.45)", "type": "boxShadow", "role": "A2"}
+    },
+    "light": {
+      "bg": {"value": "#F7F8FA", "type": "color", "role": "A1-identity"},
+      "surface": {"value": "#FFFFFF", "type": "color", "role": "A1-identity"},
+      "surface-raised": {"value": "#FFFFFF", "type": "color", "role": "B-slot"},
+      "fg": {"value": "#0F1115", "type": "color", "role": "A1-identity"},
+      "fg-2": {"value": "#3A3F47", "type": "color", "role": "B-slot"},
+      "muted": {"value": "#5B626D", "type": "color", "role": "A1-identity"},
+      "meta": {"value": "#8A8F98", "type": "color", "role": "B-slot"},
+      "border": {"value": "rgba(0,0,0,0.08)", "type": "color", "role": "A1-identity"},
+      "border-soft": {"value": "rgba(0,0,0,0.05)", "type": "color", "role": "B-slot"},
+      "accent": {"value": "#0F766E", "type": "color", "role": "A1-identity", "note": "浅底强调文字/链接，保 4.5:1"},
+      "accent-fill": {"value": "#14B8A6", "type": "color", "role": "C-extension", "note": "按钮填充，白字"},
+      "accent-hover": {"value": "#0D9488", "type": "color", "role": "A2"},
+      "accent-active": {"value": "#115E59", "type": "color", "role": "A2"},
+      "accent-on": {"value": "#FFFFFF", "type": "color", "role": "A2"},
+      "accent-soft": {"value": "rgba(15,118,110,0.10)", "type": "color", "role": "C-extension"},
+      "success": {"value": "#16A34A", "type": "color", "role": "A2"},
+      "warn": {"value": "#B45309", "type": "color", "role": "A2"},
+      "danger": {"value": "#DC2626", "type": "color", "role": "A2"},
+      "info": {"value": "#0284C7", "type": "color", "role": "A2"},
+      "focus-ring": {"value": "0 0 0 2px rgba(15,118,110,0.40)", "type": "boxShadow", "role": "A2"}
+    }
+  },
+  "font": {
+    "family-display": {"value": "Inter, Noto Sans SC, system-ui, -apple-system, sans-serif", "type": "fontFamily", "role": "A1-identity"},
+    "family-body": {"value": "Inter, Noto Sans SC, system-ui, -apple-system, sans-serif", "type": "fontFamily", "role": "A1-identity"},
+    "family-mono": {"value": "JetBrains Mono, ui-monospace, SFMono-Regular, monospace", "type": "fontFamily", "role": "A2"},
+    "size": {
+      "xs": {"value": "12px", "type": "dimension"},
+      "sm": {"value": "13px", "type": "dimension"},
+      "base": {"value": "14px", "type": "dimension"},
+      "md": {"value": "16px", "type": "dimension"},
+      "lg": {"value": "18px", "type": "dimension"},
+      "xl": {"value": "20px", "type": "dimension"},
+      "2xl": {"value": "24px", "type": "dimension"},
+      "3xl": {"value": "32px", "type": "dimension"},
+      "4xl": {"value": "40px", "type": "dimension"},
+      "display": {"value": "56px", "type": "dimension"}
+    },
+    "weight": {"read": "400", "emphasize": "510", "announce": "600"},
+    "leading": {"body": "1.5", "tight": "1.2"},
+    "tracking": {"display": "-0.02em", "caps": "0.06em"}
+  },
+  "radius": {
+    "sm": {"value": "6px", "type": "dimension"},
+    "md": {"value": "8px", "type": "dimension"},
+    "lg": {"value": "12px", "type": "dimension"},
+    "xl": {"value": "16px", "type": "dimension"},
+    "pill": {"value": "9999px", "type": "dimension"}
+  },
+  "shadow": {
+    "xs": {"value": "none", "type": "boxShadow"},
+    "sm": {"value": "0 0 0 1px var(--border)", "type": "boxShadow"},
+    "md": {"value": "0 1px 2px rgba(0,0,0,0.04), 0 4px 8px rgba(0,0,0,0.06)", "type": "boxShadow"},
+    "lg": {"value": "0 8px 24px rgba(0,0,0,0.12)", "type": "boxShadow"}
+  },
+  "space": {
+    "1": {"value": "4px", "type": "dimension"},
+    "2": {"value": "8px", "type": "dimension"},
+    "3": {"value": "12px", "type": "dimension"},
+    "4": {"value": "16px", "type": "dimension"},
+    "5": {"value": "24px", "type": "dimension"},
+    "6": {"value": "32px", "type": "dimension"},
+    "7": {"value": "48px", "type": "dimension"},
+    "8": {"value": "64px", "type": "dimension"},
+    "9": {"value": "96px", "type": "dimension"}
+  },
+  "layout": {
+    "container-max": {"value": "1280px", "type": "dimension", "role": "A1-structure"},
+    "gutter-desktop": {"value": "24px", "type": "dimension"},
+    "gutter-tablet": {"value": "16px", "type": "dimension"},
+    "gutter-phone": {"value": "12px", "type": "dimension"},
+    "section-y-desktop": {"value": "80px", "type": "dimension"},
+    "section-y-tablet": {"value": "48px", "type": "dimension"},
+    "section-y-phone": {"value": "32px", "type": "dimension"}
+  },
+  "motion": {
+    "fast": {"value": "150ms", "type": "duration"},
+    "base": {"value": "200ms", "type": "duration"},
+    "enter": {"value": "300ms", "type": "duration"},
+    "ease": {"value": "cubic-bezier(0.2,0,0,1)", "type": "cubicBezier"}
+  },
+  "icon": {
+    "source": {"value": "lucide-react@1.46.0", "type": "string", "note": "唯一图标源，禁止混用 heroicons/tabler/@radix-icons/emoji"},
+    "size-inline": {"value": "16px", "type": "dimension"},
+    "size-button": {"value": "20px", "type": "dimension"},
+    "size-standalone": {"value": "24px", "type": "dimension"},
+    "strokeWidth": {"value": "1.75", "type": "number", "note": "精密感，全局统一"},
+    "stroke": {"value": "currentColor", "type": "string", "note": "跟随 --fg/--accent"},
+    "rename-map": {
+      "AlertTriangle": "TriangleAlert",
+      "XCircle": "CircleX",
+      "CheckCircle": "CircleCheck",
+      "Loader2": "LoaderCircle",
+      "KanbanSquare": "SquareKanban",
+      "RefreshCw": "RotateCw"
+    },
+    "semantic": {
+      "success": "CircleCheck",
+      "warn": "TriangleAlert",
+      "danger": "CircleX",
+      "info": "Info",
+      "loading": "LoaderCircle",
+      "ai": "Sparkles",
+      "assistant": "Bot"
+    },
+    "oauth": {"strategy": "a", "icon": "KeyRound", "note": "文字商标+中性图标，不引品牌 logo"}
+  },
+  "breakpoint": {
+    "xs": {"value": "0px", "type": "dimension"},
+    "sm": {"value": "640px", "type": "dimension"},
+    "md": {"value": "768px", "type": "dimension"},
+    "lg": {"value": "1024px", "type": "dimension"},
+    "xl": {"value": "1280px", "type": "dimension"}
+  }
+}

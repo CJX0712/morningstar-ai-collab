@@ -1,0 +1,27 @@
+{
+  "name": "@morningstar/web",
+  "version": "1.0.0",
+  "private": true,
+  "description": "前端：Next.js App Router. 作者：晨星",
+  "author": "晨星",
+  "license": "MIT",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "lucide-react": "1.46.0",
+    "next": "15.5.25",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "@morningstar/contracts": "1.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.13.0",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "typescript": "5.9.3"
+  }
+}

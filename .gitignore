@@ -1,0 +1,30 @@
+node_modules/
+dist/
+build/
+.next/
+out/
+coverage/
+*.tsbuildinfo
+
+.env
+.env.local
+.env.*.local
+
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+yarn-error.log*
+
+.idea/
+.vscode/
+*.swp
+
+# 本地数据卷（docker-compose 生成）
+docker-data/
+
+# 临时探测文件
+_probe.txt
+_dirs.txt
+_versions.txt
+_versions2.txt

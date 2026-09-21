@@ -1,0 +1,202 @@
+# 晨星 AI 原生团队协作平台 —— 一键编排
+# 作者：晨星
+#
+# 默认（docker compose up -d）只起 6 个应用服务，全部使用零依赖默认实现
+# （内存仓储 / Mock LLM / 内存向量 / 本地确定性兜底），无 GPU、无 API Key、无外部依赖即可跑通全链路。
+#
+# 需要生产级后端时加 profile：
+#   docker compose --profile full up -d      # 追加 Qdrant + Ollama
+#
+# 回滚：docker compose down && git checkout <上一个 tag> && docker compose up -d --build
+
+services:
+  # ---------------------------------------------------------------- 协作核心
+  collab-core:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.service
+      args:
+        APP: collab-core
+    image: morningstar/collab-core:1.0.0
+    container_name: morningstar-collab-core
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3001"
+      STORAGE_BACKEND: ${STORAGE_BACKEND:-memory}
+    ports:
+      - "3001:3001"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3001/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  # ---------------------------------------------------------------- AI 网关
+  ai-gateway:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.service
+      args:
+        APP: ai-gateway
+    image: morningstar/ai-gateway:1.0.0
+    container_name: morningstar-ai-gateway
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3002"
+      LLM_PROVIDER: ${LLM_PROVIDER:-mock}
+      LLM_MODEL: ${LLM_MODEL:-morningstar-mock-1}
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-}
+      OPENAI_BASE_URL: ${OPENAI_BASE_URL:-}
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+    ports:
+      - "3002:3002"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3002/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  # ---------------------------------------------------------------- RAG 知识库
+  rag-service:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.service
+      args:
+        APP: rag-service
+    image: morningstar/rag-service:1.0.0
+    container_name: morningstar-rag-service
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3003"
+      VECTOR_BACKEND: ${VECTOR_BACKEND:-memory}
+      QDRANT_URL: ${QDRANT_URL:-}
+      EMBEDDER: ${EMBEDDER:-hash}
+      EMBEDDING_DIM: ${EMBEDDING_DIM:-256}
+      CHUNK_SIZE: ${CHUNK_SIZE:-800}
+      CHUNK_OVERLAP: ${CHUNK_OVERLAP:-100}
+    ports:
+      - "3003:3003"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3003/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  # ---------------------------------------------------------------- 会议纪要
+  meeting-summary:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.service
+      args:
+        APP: meeting-summary
+    image: morningstar/meeting-summary:1.0.0
+    container_name: morningstar-meeting-summary
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3004"
+      AI_GATEWAY_URL: ${AI_GATEWAY_URL:-http://ai-gateway:3002}
+      COLLAB_CORE_URL: ${COLLAB_CORE_URL:-http://collab-core:3001}
+    depends_on:
+      collab-core:
+        condition: service_healthy
+    ports:
+      - "3004:3004"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3004/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  # ---------------------------------------------------------------- 代码 / 任务助手
+  code-task-assistant:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.service
+      args:
+        APP: code-task-assistant
+    image: morningstar/code-task-assistant:1.0.0
+    container_name: morningstar-code-task-assistant
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3005"
+      AI_GATEWAY_URL: ${AI_GATEWAY_URL:-http://ai-gateway:3002}
+      RAG_SERVICE_URL: ${RAG_SERVICE_URL:-http://rag-service:3003}
+      COLLAB_CORE_URL: ${COLLAB_CORE_URL:-http://collab-core:3001}
+    depends_on:
+      collab-core:
+        condition: service_healthy
+    ports:
+      - "3005:3005"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3005/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  # ---------------------------------------------------------------- 前端
+  web:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.web
+    image: morningstar/web:1.0.0
+    container_name: morningstar-web
+    restart: unless-stopped
+    environment:
+      NODE_ENV: production
+      PORT: "3000"
+      NEXT_PUBLIC_API_BASE: ${NEXT_PUBLIC_API_BASE:-http://localhost:3001}
+    depends_on:
+      collab-core:
+        condition: service_healthy
+      ai-gateway:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 30s
+      retries: 3
+
+  # ---------------------------------------------------------------- 可选：生产级向量库
+  qdrant:
+    image: qdrant/qdrant:v1.13.6
+    container_name: morningstar-qdrant
+    profiles: ["full"]
+    restart: unless-stopped
+    volumes:
+      - qdrant-data:/qdrant/storage
+    ports:
+      - "6333:6333"
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:6333/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 30s
+      timeout: 5s
+      start_period: 20s
+      retries: 3
+
+  # ---------------------------------------------------------------- 可选：本地大模型
+  ollama:
+    image: ollama/ollama:0.6.5
+    container_name: morningstar-ollama
+    profiles: ["full"]
+    restart: unless-stopped
+    volumes:
+      - ollama-data:/root/.ollama
+    ports:
+      - "11434:11434"
+
+volumes:
+  qdrant-data:
+  ollama-data:

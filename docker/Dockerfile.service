@@ -1,0 +1,27 @@
+# 通用后端服务镜像（5 个服务共用，通过 APP 构建参数区分）
+# 作者：晨星
+FROM node:22-bookworm-slim
+
+WORKDIR /app
+ARG APP
+ENV APP=${APP}
+ENV NODE_ENV=production
+
+# 只复制根清单 + 契约包 + 目标服务，避免把前端依赖打进后端镜像
+COPY package.json package-lock.json tsconfig.base.json ./
+COPY packages/contracts ./packages/contracts
+COPY apps/${APP} ./apps/${APP}
+
+RUN npm ci --include-workspace-root \
+      --workspace=@morningstar/contracts \
+      --workspace=@morningstar/${APP}
+
+RUN ./node_modules/.bin/tsc -p packages/contracts/tsconfig.json \
+ && ./node_modules/.bin/tsc -p apps/${APP}/tsconfig.json
+
+EXPOSE 3000
+
+HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
+  CMD node -e "fetch('http://127.0.0.1:'+(process.env.PORT||'3000')+'/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
+
+CMD ["sh", "-c", "node apps/${APP}/dist/main.js"]

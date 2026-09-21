@@ -1,0 +1,648 @@
+openapi: 3.0.3
+info:
+  title: 晨星 AI 原生团队协作平台 API
+  version: 1.0.0
+  description: >
+    跨服务 HTTP 契约。所有响应统一封装为 Envelope<T>。
+    错误码分段：1xxx 业务 / 2xxx AI 网关 / 3xxx RAG / 4xxx 纪要 / 5xxx 代码助手。
+    契约的唯一类型源是 packages/contracts/src/index.ts，本文件供前端与外部集成生成客户端使用。
+  contact:
+    name: 晨星
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:3001
+    description: collab-core
+  - url: http://localhost:3002
+    description: ai-gateway
+  - url: http://localhost:3003
+    description: rag-service
+  - url: http://localhost:3004
+    description: meeting-summary
+  - url: http://localhost:3005
+    description: code-task-assistant
+
+paths:
+  /health:
+    get:
+      summary: 健康检查
+      tags: [common]
+      responses:
+        '200':
+          description: 服务正常
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data:
+                        $ref: '#/components/schemas/Health'
+
+  /api/v1/workspaces:
+    post:
+      summary: 创建工作区
+      tags: [collab]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name]
+              properties:
+                name: { type: string, example: 晨星研发空间 }
+      responses:
+        '200':
+          description: 创建成功或业务失败（见 code）
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Workspace' }
+    get:
+      summary: 列出工作区
+      tags: [collab]
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Workspace' }
+
+  /api/v1/projects:
+    post:
+      summary: 创建项目
+      tags: [collab]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [workspaceId, name, key]
+              properties:
+                workspaceId: { type: string }
+                name: { type: string, example: 看板重构 }
+                key: { type: string, example: BD }
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Project' }
+    get:
+      summary: 列出项目
+      tags: [collab]
+      parameters:
+        - in: query
+          name: workspaceId
+          schema: { type: string }
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Project' }
+
+  /api/v1/tasks:
+    post:
+      summary: 创建任务
+      tags: [collab]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [projectId, title]
+              properties:
+                projectId: { type: string }
+                title: { type: string, example: 修复登录 500 报错 }
+                description: { type: string }
+                priority: { $ref: '#/components/schemas/TaskPriority' }
+                assigneeId: { type: string }
+                labels:
+                  type: array
+                  items: { type: string }
+      responses:
+        '200':
+          description: 成功或业务失败（1003 缺参 / 1004 项目不存在）
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Task' }
+    get:
+      summary: 列出任务
+      tags: [collab]
+      parameters:
+        - in: query
+          name: projectId
+          schema: { type: string }
+        - in: query
+          name: status
+          schema: { $ref: '#/components/schemas/TaskStatus' }
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Task' }
+
+  /api/v1/tasks/{id}:
+    parameters:
+      - in: path
+        name: id
+        required: true
+        schema: { type: string }
+    get:
+      summary: 任务详情
+      tags: [collab]
+      responses:
+        '200':
+          description: 成功或 1005 不存在
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Task' }
+    patch:
+      summary: 更新任务（含状态流转）
+      tags: [collab]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                title: { type: string }
+                description: { type: string }
+                status: { $ref: '#/components/schemas/TaskStatus' }
+                priority: { $ref: '#/components/schemas/TaskPriority' }
+                assigneeId: { type: string }
+                labels:
+                  type: array
+                  items: { type: string }
+      responses:
+        '200':
+          description: 成功或 1005/1006
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/Task' }
+    delete:
+      summary: 删除任务
+      tags: [collab]
+      responses:
+        '200':
+          description: 成功
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: object
+                        properties:
+                          id: { type: string }
+                          deleted: { type: boolean }
+
+  /api/v1/chat:
+    post:
+      summary: 非流式对话
+      tags: [ai]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [messages]
+              properties:
+                model: { type: string }
+                messages:
+                  type: array
+                  items: { $ref: '#/components/schemas/ChatMessage' }
+                stream: { type: boolean }
+                useRag: { type: boolean }
+                collection: { type: string }
+      responses:
+        '200':
+          description: 成功或 2001/2002
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/ChatResponse' }
+
+  /api/v1/chat/stream:
+    post:
+      summary: SSE 流式对话
+      tags: [ai]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [messages]
+              properties:
+                messages:
+                  type: array
+                  items: { $ref: '#/components/schemas/ChatMessage' }
+      responses:
+        '200':
+          description: text/event-stream，每帧 data: {"delta":"...","done":false}
+          content:
+            text/event-stream:
+              schema: { type: string }
+
+  /api/v1/models:
+    get:
+      summary: 当前 provider 与模型
+      tags: [ai]
+      responses:
+        '200': { description: 成功 }
+
+  /api/v1/ingest:
+    post:
+      summary: 文档灌入（分块 + 嵌入）
+      tags: [rag]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [collection, docId, text]
+              properties:
+                collection: { type: string, example: handbook }
+                docId: { type: string, example: doc-1 }
+                text: { type: string }
+                metadata:
+                  type: object
+                  additionalProperties: true
+      responses:
+        '200':
+          description: 成功或 3001/3002/3003
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/IngestResult' }
+
+  /api/v1/retrieve:
+    post:
+      summary: 语义检索（带来源）
+      tags: [rag]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [collection, query]
+              properties:
+                collection: { type: string }
+                query: { type: string }
+                topK: { type: integer, default: 5 }
+                scoreThreshold: { type: number }
+      responses:
+        '200':
+          description: 成功或 3004/3005
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/RetrieveResult' }
+
+  /api/v1/collections:
+    get:
+      summary: 知识库列表
+      tags: [rag]
+      responses:
+        '200': { description: 成功 }
+
+  /api/v1/meetings:
+    post:
+      summary: 提交转写并生成纪要
+      tags: [meeting]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [workspaceId, title, transcript]
+              properties:
+                workspaceId: { type: string }
+                title: { type: string }
+                transcript: { type: string }
+                language: { type: string, default: zh-CN }
+      responses:
+        '200':
+          description: 成功或 4001
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/MeetingStatus' }
+
+  /api/v1/meetings/{id}:
+    get:
+      summary: 查询纪要状态
+      tags: [meeting]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      responses:
+        '200':
+          description: 成功或 4002
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/MeetingStatus' }
+
+  /api/v1/meetings/{id}/action-items/to-tasks:
+    post:
+      summary: 行动项一键转任务卡
+      tags: [meeting]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [projectId]
+              properties:
+                projectId: { type: string }
+      responses:
+        '200':
+          description: 成功或 4002/4003/4004/4005
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data:
+                        type: array
+                        items: { $ref: '#/components/schemas/Task' }
+
+  /api/v1/tasks/{id}/breakdown:
+    post:
+      summary: 任务拆解
+      tags: [code]
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [taskId, title]
+              properties:
+                taskId: { type: string }
+                title: { type: string }
+                description: { type: string }
+                maxSubTasks: { type: integer, default: 4 }
+      responses:
+        '200':
+          description: 成功或 5001
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/BreakdownResult' }
+
+  /api/v1/code/review:
+    post:
+      summary: 代码审查
+      tags: [code]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [code]
+              properties:
+                code: { type: string }
+                language: { type: string }
+                context: { type: string }
+      responses:
+        '200':
+          description: 成功或 5002
+          content:
+            application/json:
+              schema:
+                allOf:
+                  - $ref: '#/components/schemas/Envelope'
+                  - type: object
+                    properties:
+                      data: { $ref: '#/components/schemas/CodeReviewResult' }
+
+components:
+  schemas:
+    Envelope:
+      type: object
+      required: [code, data, message]
+      properties:
+        code: { type: integer, description: 0 表示成功 }
+        message: { type: string }
+    Health:
+      type: object
+      properties:
+        service: { type: string }
+        status: { type: string }
+        time: { type: string, format: date-time }
+    Workspace:
+      type: object
+      properties:
+        id: { type: string }
+        name: { type: string }
+        createdAt: { type: string, format: date-time }
+    Project:
+      type: object
+      properties:
+        id: { type: string }
+        workspaceId: { type: string }
+        name: { type: string }
+        key: { type: string }
+        createdAt: { type: string, format: date-time }
+    TaskStatus:
+      type: string
+      enum: [backlog, todo, in_progress, done, cancelled]
+    TaskPriority:
+      type: string
+      enum: [low, medium, high, urgent]
+    Task:
+      type: object
+      properties:
+        id: { type: string }
+        projectId: { type: string }
+        title: { type: string }
+        description: { type: string }
+        status: { $ref: '#/components/schemas/TaskStatus' }
+        priority: { $ref: '#/components/schemas/TaskPriority' }
+        assigneeId: { type: string }
+        labels:
+          type: array
+          items: { type: string }
+        createdAt: { type: string, format: date-time }
+        updatedAt: { type: string, format: date-time }
+    ChatMessage:
+      type: object
+      required: [role, content]
+      properties:
+        role: { type: string, enum: [system, user, assistant] }
+        content: { type: string }
+    Citation:
+      type: object
+      properties:
+        id: { type: string }
+        score: { type: number }
+        text: { type: string }
+        source: { type: string }
+    ChatResponse:
+      type: object
+      properties:
+        content: { type: string }
+        model: { type: string }
+        finishReason: { type: string }
+        citations:
+          type: array
+          items: { $ref: '#/components/schemas/Citation' }
+    IngestResult:
+      type: object
+      properties:
+        collection: { type: string }
+        docId: { type: string }
+        chunks: { type: integer }
+    RetrieveResult:
+      type: object
+      properties:
+        hits:
+          type: array
+          items: { $ref: '#/components/schemas/Citation' }
+    ActionItem:
+      type: object
+      properties:
+        title: { type: string }
+        assignee: { type: string }
+        due: { type: string }
+    MeetingStatus:
+      type: object
+      properties:
+        id: { type: string }
+        title: { type: string }
+        stage: { type: string, enum: [queued, summarizing, done, failed] }
+        summary: { type: string }
+        decisions:
+          type: array
+          items: { type: string }
+        actionItems:
+          type: array
+          items: { $ref: '#/components/schemas/ActionItem' }
+        error: { type: string }
+    BreakdownResult:
+      type: object
+      properties:
+        taskId: { type: string }
+        subTasks:
+          type: array
+          items:
+            type: object
+            properties:
+              title: { type: string }
+              description: { type: string }
+              estimate: { type: string }
+    CodeReviewResult:
+      type: object
+      properties:
+        summary: { type: string }
+        issues:
+          type: array
+          items:
+            type: object
+            properties:
+              severity: { type: string, enum: [info, warn, error] }
+              line: { type: integer }
+              message: { type: string }
+              suggestion: { type: string }

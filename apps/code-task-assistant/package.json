@@ -1,0 +1,25 @@
+{
+  "name": "@morningstar/code-task-assistant",
+  "version": "1.0.0",
+  "private": true,
+  "description": "代码 / 任务助手：任务拆解与代码审查. 作者：晨星",
+  "author": "晨星",
+  "license": "MIT",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "node --test \"dist/**/*.test.js\""
+  },
+  "dependencies": {
+    "@morningstar/contracts": "1.0.0",
+    "@nestjs/common": "11.2.5",
+    "@nestjs/core": "11.2.5",
+    "@nestjs/platform-fastify": "11.2.5",
+    "reflect-metadata": "0.2.2",
+    "rxjs": "7.8.2"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  }
+}
