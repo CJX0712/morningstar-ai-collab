@@ -182,9 +182,13 @@ tools/scan-emoji.js        P0 emoji 门禁
 | 项 | 命令 | 结果 |
 |----|------|------|
 | 后端编译 | `npm run build` | 0 个 TS 错误，exit 0 |
-| 离线测试 | `npm run test` | 18/18 通过（无网络、无 Key、无数据库） |
+| 离线单元测试 | `npm run test` | 18/18 通过（无网络、无 Key、无数据库） |
 | 前端构建 | `next build` | 编译成功，8/8 页面生成 |
-| P0 emoji 门禁 | `node tools/scan-emoji.js` | 扫描 82 文件，0 违规 |
+| 端到端运行时链路 | `npm run e2e` | 27/27 通过（自动拉起 5 个服务并跑通跨服务链路） |
+| P0 emoji 门禁 | `node tools/scan-emoji.js` | 扫描 93 文件，0 违规 |
+| 一键全量验证 | `npm run verify` | 构建 + 单测 + E2E + 门禁，exit 0 |
+
+`npm run e2e` 会自行拉起 5 个服务、等待健康检查、跑通「建工作区→建项目→建任务→对话→灌入→检索→会议纪要→行动项转任务卡→任务拆解→代码审查」的完整链路（含 6 条错误流断言），跑完自动关闭进程，**不需要 docker、不需要 curl、不需要外部数据库**。
 
 ## 十、许可证
 

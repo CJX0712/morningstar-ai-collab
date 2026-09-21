@@ -17,7 +17,8 @@
     "test": "npm run test --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint:emoji": "node tools/scan-emoji.js",
-    "verify": "npm run build && npm run test && npm run lint:emoji"
+    "e2e": "node scripts/e2e-check.js",
+    "verify": "npm run build && npm run test && npm run e2e && npm run lint:emoji"
   },
   "devDependencies": {
     "@types/node": "^22.13.0",
