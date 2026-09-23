@@ -1,5 +1,12 @@
 # 晨星 · AI 原生团队协作平台
 
+<p align="center">
+  <a href="https://github.com/CJX0712/morningstar-ai-collab/actions/workflows/ci.yml"><img src="https://github.com/CJX0712/morningstar-ai-collab/actions/workflows/ci.yml/badge.svg" alt="ci"></a>
+  <a href="https://github.com/CJX0712/morningstar-ai-collab/releases"><img src="https://img.shields.io/github/v/release/CJX0712/morningstar-ai-collab?sort=semver" alt="release"></a>
+  <a href="https://github.com/CJX0712/morningstar-ai-collab/blob/main/LICENSE"><img src="https://img.shields.io/github/license/CJX0712/morningstar-ai-collab" alt="license"></a>
+  <img src="https://img.shields.io/badge/author-%E6%99%A8%E6%98%9F-1f6feb" alt="author">
+</p>
+
 开源可自托管的 AI 原生团队协作平台。**AI 是第一公民，不是插件**：看板协作、企业知识库、会议纪要、代码/任务助手四大能力共享同一项目上下文，全部可运行在你自己的环境里，数据不出内网。
 
 作者：晨星
