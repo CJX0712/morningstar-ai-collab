@@ -12,7 +12,8 @@ COPY package.json package-lock.json tsconfig.base.json ./
 COPY packages/contracts ./packages/contracts
 COPY apps/${APP} ./apps/${APP}
 
-RUN npm ci --include-workspace-root \
+# NODE_ENV=production 会让 npm 跳过 devDependencies，但 tsc 是构建期必需，故显式 --include=dev。
+RUN npm ci --include=dev --include-workspace-root \
       --workspace=@morningstar/contracts \
       --workspace=@morningstar/${APP}
 
